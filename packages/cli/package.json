@@ -1,0 +1,19 @@
+{
+  "name": "@figurekit/cli",
+  "version": "0.1.0",
+  "description": "Connect FigureKit to coding agents",
+  "type": "module",
+  "bin": {
+    "figurekit": "./src/index.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "files": [
+    "src"
+  ],
+  "license": "MIT"
+}
