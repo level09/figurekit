@@ -1,0 +1,28 @@
+{
+  "name": "figurekit",
+  "version": "0.1.0",
+  "description": "FigureKit visual-generation tools and editorial art direction",
+  "author": {
+    "name": "Level09",
+    "url": "https://github.com/level09"
+  },
+  "homepage": "https://figurekit.dev",
+  "repository": "https://github.com/level09/figurekit",
+  "license": "MIT",
+  "keywords": ["mcp", "image-generation", "editorial", "visuals"],
+  "skills": "./skills",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "FigureKit",
+    "shortDescription": "Create purposeful editorial visuals",
+    "longDescription": "Curated visual-generation tools and art direction for documents, stories, explainers, and conceptual work.",
+    "developerName": "Level09",
+    "category": "Design",
+    "capabilities": ["MCP tools", "Image generation", "Editorial direction"],
+    "websiteURL": "https://figurekit.dev",
+    "defaultPrompt": [
+      "Create an editorial visual that clarifies this document."
+    ],
+    "brandColor": "#F45B3A"
+  }
+}

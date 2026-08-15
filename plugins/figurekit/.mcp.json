@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "figurekit": {
+      "type": "http",
+      "url": "https://mcp.figurekit.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${FIGUREKIT_MCP_KEY}"
+      }
+    }
+  }
+}

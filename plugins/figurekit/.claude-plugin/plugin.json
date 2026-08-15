@@ -1,0 +1,14 @@
+{
+  "name": "figurekit",
+  "version": "0.1.0",
+  "description": "FigureKit visual-generation tools and editorial art direction for Claude Code",
+  "author": {
+    "name": "Level09"
+  },
+  "homepage": "https://figurekit.dev",
+  "repository": "https://github.com/level09/figurekit",
+  "license": "MIT",
+  "keywords": ["mcp", "image-generation", "editorial", "visuals"],
+  "skills": ["./skills/figurekit"],
+  "mcpServers": "./.mcp.json"
+}
