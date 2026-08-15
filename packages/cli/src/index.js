@@ -16,7 +16,13 @@ export function parseArgs(args) {
   const agentIndex = args.indexOf("--agent");
   const agent = args[agentIndex + 1];
   const allowed = new Set(["connect", "--agent", "claude-code", "codex", "--replace"]);
-  if (!agent || agentIndex === -1 || args.some((arg) => !allowed.has(arg))) {
+  if (
+    !agent ||
+    agentIndex === -1 ||
+    args.filter((arg) => arg === "--agent").length !== 1 ||
+    args.filter((arg) => arg === "--replace").length > 1 ||
+    args.some((arg) => !allowed.has(arg))
+  ) {
     throw new Error("Usage: figurekit connect --agent <claude-code|codex> [--replace]");
   }
 

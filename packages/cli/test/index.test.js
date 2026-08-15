@@ -16,3 +16,10 @@ test("does not accept a key argument", () => {
     /FIGUREKIT_MCP_KEY/,
   );
 });
+
+test("rejects duplicate agent options", () => {
+  assert.throws(
+    () => parseArgs(["connect", "--agent", "codex", "--agent", "claude-code"]),
+    /Usage/,
+  );
+});

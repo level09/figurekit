@@ -75,6 +75,15 @@ export async function validateKey(fetchImpl, key) {
   }
 
   if (!response.ok) throw new Error("could not validate FigureKit key");
+
+  try {
+    const payload = await response.json();
+    if (!payload?.result?.serverInfo?.name) {
+      throw new Error("missing server information");
+    }
+  } catch {
+    throw new Error("could not validate FigureKit key");
+  }
 }
 
 export function isFigureKitEntry(output) {
