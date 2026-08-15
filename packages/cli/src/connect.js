@@ -48,3 +48,54 @@ export function buildAddCommand(agent) {
         ],
       };
 }
+
+export async function validateKey(fetchImpl, key) {
+  let response;
+  try {
+    response = await fetchImpl(MCP_URL, {
+      method: "POST",
+      headers: {
+        accept: "application/json, text/event-stream",
+        authorization: `Bearer ${key}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "initialize",
+        params: {
+          protocolVersion: "2025-06-18",
+          capabilities: {},
+          clientInfo: { name: "figurekit-connect", version: "0.1.0" },
+        },
+      }),
+    });
+  } catch {
+    throw new Error("could not validate FigureKit key");
+  }
+
+  if (!response.ok) throw new Error("could not validate FigureKit key");
+}
+
+export function isFigureKitEntry(output) {
+  return output.includes("mcp.figurekit.dev/mcp");
+}
+
+export async function connect({ agent, key, replace = false, fetchImpl = fetch, runCommand }) {
+  parseAgent(agent);
+  await validateKey(fetchImpl, key);
+
+  const existing = await runCommand(buildGetCommand(agent));
+  if (existing.code === 0) {
+    if (!isFigureKitEntry(existing.stdout)) {
+      throw new Error("figurekit already exists and is not a FigureKit connection");
+    }
+    if (!replace) throw new Error("FigureKit is already connected. Run again with --replace.");
+
+    const removed = await runCommand(buildRemoveCommand(agent));
+    if (removed.code !== 0) throw new Error("could not replace the existing FigureKit connection");
+  }
+
+  const added = await runCommand(buildAddCommand(agent));
+  if (added.code !== 0) throw new Error("could not connect FigureKit");
+}
