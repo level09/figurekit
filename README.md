@@ -27,6 +27,25 @@ claude
 
 Run `/mcp` in Claude Code to confirm that FigureKit is connected.
 
+## Connect with the CLI
+
+The CLI verifies your key before it changes agent configuration. It stores an
+environment-variable reference, never the key itself.
+
+```sh
+export FIGUREKIT_MCP_KEY='vis_your_key_here'
+npx --yes @figurekit/cli connect --agent claude-code
+```
+
+For Codex:
+
+```sh
+npx --yes @figurekit/cli connect --agent codex
+```
+
+Use `--replace` only to replace an existing FigureKit connection. The CLI does
+not replace another MCP server that happens to use the `figurekit` name.
+
 ## Other agents
 
 The `plugins/figurekit/skills/figurekit/SKILL.md` folder is portable. Copy or
@@ -46,11 +65,6 @@ with this configuration:
   }
 }
 ```
-
-## Roadmap
-
-The next version replaces manual environment-key setup with browser OAuth and a
-single `figurekit connect` command. The plugin and skill stay the same.
 
 ## Security
 
