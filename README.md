@@ -7,44 +7,30 @@ This repository is public by design. It contains the agent plugin and skill
 only. It contains no FigureKit production code, style-reference images,
 credentials, customer data, or deployment configuration.
 
-## Claude Code
+## Connect
 
-Inside Claude Code, install the marketplace and plugin:
+FigureKit is a remote MCP connector at `https://mcp.figurekit.dev/mcp`. Add that
+URL in your client and approve it in the browser with your FigureKit connect
+code. There is no key to store and nothing to put in a configuration file.
+
+- Claude Code: `claude mcp add --scope user --transport http figurekit https://mcp.figurekit.dev/mcp`, then run `/mcp` to approve.
+- Claude desktop and claude.ai: Settings, Connectors, Add custom connector.
+- ChatGPT: Settings, Connectors, developer mode, add the same URL.
+- Codex and other MCP clients: add the URL as a streamable HTTP server.
+
+The beta is invite only. Ask for a connect code if you do not have one.
+
+## Claude Code plugin
+
+The plugin registers the connector and installs the FigureKit skill, which
+carries the editorial direction for choosing a style and placing the result:
 
 ```text
 /plugin marketplace add level09/figurekit
 /plugin install figurekit@figurekit
 ```
 
-The plugin registers `https://mcp.figurekit.dev/mcp` and includes the FigureKit
-skill. The current hosted service uses a personal MCP key supplied through the
-environment, never in a committed file:
-
-```sh
-export FIGUREKIT_MCP_KEY='vis_your_key_here'
-claude
-```
-
-Run `/mcp` in Claude Code to confirm that FigureKit is connected.
-
-## Connect with the CLI
-
-The CLI verifies your key before it changes agent configuration. It stores an
-environment-variable reference, never the key itself.
-
-```sh
-export FIGUREKIT_MCP_KEY='vis_your_key_here'
-npx --yes @figurekit/cli connect --agent claude-code
-```
-
-For Codex:
-
-```sh
-npx --yes @figurekit/cli connect --agent codex
-```
-
-Use `--replace` only to replace an existing FigureKit connection. The CLI does
-not replace another MCP server that happens to use the `figurekit` name.
+Run `/mcp` to approve the connection. The plugin ships no credentials.
 
 ## Other agents
 
@@ -57,10 +43,7 @@ with this configuration:
   "mcpServers": {
     "figurekit": {
       "type": "http",
-      "url": "https://mcp.figurekit.dev/mcp",
-      "headers": {
-        "Authorization": "Bearer ${FIGUREKIT_MCP_KEY}"
-      }
+      "url": "https://mcp.figurekit.dev/mcp"
     }
   }
 }
@@ -68,5 +51,7 @@ with this configuration:
 
 ## Security
 
-Never commit an MCP key. If a key is exposed, revoke it immediately and issue a
-new one from the private FigureKit product repository.
+A connect code authorizes an agent against your credit balance. Treat it as a
+secret, never commit it, and ask for it to be revoked if it is exposed. Approval
+happens on `mcp.figurekit.dev`, and the access it grants can be revoked without
+touching your account.
