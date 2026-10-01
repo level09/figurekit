@@ -34,7 +34,7 @@ Run `/mcp` to approve the connection. The plugin ships no credentials.
 
 ## Other agents
 
-The `plugins/figurekit/skills/figurekit/SKILL.md` folder is portable. Copy or
+The `plugins/figurekit/skills/figurekit/` folder is portable. Copy or
 install it using your agent's skill mechanism, then add the FigureKit MCP server
 with this configuration:
 
