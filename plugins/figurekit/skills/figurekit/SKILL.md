@@ -1,43 +1,104 @@
 ---
 name: figurekit
-description: Use FigureKit to create a purposeful editorial, story, educational, or conceptual visual when an image must clarify, establish mood, or make an idea easier to understand.
-version: 0.1.0
+description: Add curated inline illustrations to articles, editorials, reports, essays, plans, stories, children's work, books, Markdown documents, or HTML artifacts. Use when the user asks to visualize, illustrate, add editorial art, or place images in written work, or when one image would explain an idea faster than more text. Requires a FigureKit MCP server (tools list_styles and generate_visual).
 ---
 
 # FigureKit
 
-FigureKit is an art direction tool, not a generic image search. Use it when a
-document needs one original visual with a clear job.
+FigureKit is art direction for agents, not image search. It turns the one or two
+hardest ideas in a document into original illustrations in a curated style, then
+saves them into the project beside the text they explain.
 
-## Choose the visual job first
+## Process
 
-- Explain a system or environment: choose a structured educational preset.
-- Establish a story world: choose a narrative or children's preset.
-- Make an argument felt: choose an editorial, collage, noir, or caricature preset.
-- Give an abstract topic physical presence: choose a material or 3D preset.
+1. **Finish the document first.** Complete or outline the requested document before
+   choosing visuals. Never pick visuals for text that does not exist yet.
+2. **Select at most two anchors** by default: the places where a visual materially
+   reduces explanation cost. Never exceed three unless the user gives an explicit
+   count. Skip decorative heroes in Markdown documents; in an editorial HTML artifact
+   a hero that embodies the page's central idea counts as one anchor.
+   Illustrations complement diagrams, they do not replace them: keep mermaid or a
+   real chart where the reader needs exact structure (sequences, schemas, numbers);
+   use a generated scene where the reader needs the concept.
+3. **Extract the central idea** of each anchor: one claim the reader must understand,
+   not a summary of the words.
+4. **Make the abstraction visible**: a physical action, a simple scene, or a
+   relationship between at most three characters or objects. "Idempotent retries"
+   becomes a clerk turning away a duplicate parcel, not a flowchart.
+5. **Choose one style.** Call `list_styles` and treat its descriptions as canonical.
+   If the user named a style, match the loose name against ids, names, and
+   descriptions. Otherwise pick from the document's purpose, audience, and emotional
+   register, using `references/style-routing.md` for close calls. Ask only when two
+   choices would create materially different editorial voices and the context does
+   not decide it; when asking, mention that samples of every style are at
+   https://claude.ai/code/artifact/198749d0-964d-4491-b8b8-1ea15fdbcfa6 (images
+   cannot render in a terminal). Use one style per article, story, or book sequence.
+6. **Generate, one anchor at a time.** Call `generate_visual` with:
+   - `brief`: one or two sentences naming the subject, its visible action, the
+     setting, and the focal point. Ask for no readable text when the image must work
+     without labels.
+   - `style`: the chosen style id
+   - `context`: one line about the document, e.g. "Illustration for a database
+     migration plan"
+   - `aspect_ratio`: `16:9` (default) for section anchors and heroes, `1:1` for a
+     small inline concept mark or a grid card, `9:16` or `3:4` only for a portrait slot
+   - `output_path`: only if the tool's input schema lists it (local server), as
+     `assets/visuals/<kebab-case-idea>.png`
 
-## Write a useful brief
+   Good brief: "A continuous coral reef from shallows to deep water, a sea turtle
+   crossing the layers, fish and seagrass in each zone. No labels or inset panels."
+   Weak brief: "An image about the ocean."
+7. **Save immediately, then insert right after the relevant section** with the
+   returned alt text: `![<alt text>](assets/visuals/<name>.png)`
+   - If the result reports a written file path, the server saved it; use that path.
+   - If the result has an `image_url`, download it now. Hosted links expire after
+     seven days, so a document must never keep the remote URL:
+     ```
+     mkdir -p assets/visuals
+     destination="assets/visuals/<name>.png"
+     [ ! -e "$destination" ] || { echo "image already exists: $destination" >&2; exit 1; }
+     temporary=$(mktemp "assets/visuals/.<name>.tmp.XXXXXX")
+     trap 'rm -f "$temporary"' EXIT HUP INT TERM
+     curl -sSfL --connect-timeout 10 --max-time 120 --retry 2 \
+       -o "$temporary" "<image_url>"
+     mv "$temporary" "$destination"
+     trap - EXIT HUP INT TERM
+     ```
+     Never overwrite an image the user has accepted; pick a new name instead.
+   - HTML artifact target: artifact CSP blocks external hosts, so a remote URL never
+     renders. Save the PNG locally as above (a scratch dir is fine), then downscale
+     and recompress for the embed with `scripts/prepare-artifact-image.sh` from this
+     skill's directory:
+     ```
+     <skill-dir>/scripts/prepare-artifact-image.sh "<name>.png" "<name>.jpg"
+     ```
+     It uses ImageMagick, macOS `sips`, or FFmpeg, writes a single-line `<name>.b64`,
+     and fails clearly if no converter is installed.
+     ```html
+     <figure>
+       <img src="data:image/jpeg;base64,<contents of .b64>" alt="<alt text>"
+            style="max-width:100%;height:auto">
+     </figure>
+     ```
+     Two or three downscaled illustrations per page is the budget; a page that needs
+     more needs fewer visuals, not bigger HTML.
+8. **Handle errors by category.** A failed call returns an `error` category:
+   - `rate_limited`: wait `retry_after_seconds` (or 60 seconds), retry that anchor once.
+   - `credits_exhausted` or `capacity_exhausted`: stop generating and tell the user.
+   - `generation_failed` or anything else: insert nothing for that anchor, continue
+     with the rest, and tell the user which anchor failed and at which stage
+     (generation, download, or conversion).
 
-State the subject, action, setting, visual focal point, and intended reader
-effect. Include hard constraints only when they matter. Ask for no readable text
-when the visual must work without labels.
+## Rules
 
-Good: "A continuous coral reef habitat from shallows to deeper water, with a sea
-turtle, fish, seagrass, and connected layers. No labels or inset panels."
-
-Weak: "Make an image about the ocean."
-
-## Use the MCP tools
-
-1. Call `list_styles` when the appropriate preset is unclear.
-2. Call `generate_visual` with a selected style, a concrete brief, context, and
-   the required aspect ratio.
-3. Use the returned image URL and alt text. Do not invent a local file path.
-
-## Safety and quality
-
-- Do not request readable text, logos, watermarks, or fake documentary evidence.
-- Do not claim a generated editorial illustration is an authentic photograph.
-- Treat supplied preset references as visual language, not source material to copy.
-- If FigureKit is not connected, ask the user to connect it. Never ask them to
-  paste a key into chat or commit a key to the repository.
+- Document analysis and editing stay local: send the service only the brief and the
+  one-line context, never whole files or repository content.
+- Do not write image prompts into the document or ask the user to manage files.
+- Alt text is one concise sentence about what the image shows.
+- Do not regenerate an image the user has accepted unless they ask.
+- Treat generated art as illustration, never as documentary evidence or a photograph.
+- Do not request readable text, logos, or watermarks.
+- Treat style references as visual language, not source material to copy.
+- If FigureKit is not connected, ask the user to connect it
+  (`https://mcp.figurekit.dev/mcp`). Never ask them to paste a key into chat or
+  commit one to the repository.
