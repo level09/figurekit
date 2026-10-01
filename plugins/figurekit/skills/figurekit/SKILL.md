@@ -49,13 +49,14 @@ saves them into the project beside the text they explain.
    crossing the layers, fish and seagrass in each zone. No labels or inset panels."
    Weak brief: "An image about the ocean."
 7. **Save immediately, then insert right after the relevant section** with the
-   returned alt text: `![<alt text>](assets/visuals/<name>.png)`
+   returned alt text: `![<alt text>](assets/visuals/<name><ext>)`
    - If the result reports a written file path, the server saved it; use that path.
    - If the result has an `image_url`, download it now. Hosted links expire after
-     seven days, so a document must never keep the remote URL:
+     seven days, so a document must never keep the remote URL. Use the result's
+     `file_extension` as `<ext>` (hosted images are often `.jpg`, not `.png`):
      ```
      mkdir -p assets/visuals
-     destination="assets/visuals/<name>.png"
+     destination="assets/visuals/<name><ext>"
      [ ! -e "$destination" ] || { echo "image already exists: $destination" >&2; exit 1; }
      temporary=$(mktemp "assets/visuals/.<name>.tmp.XXXXXX")
      trap 'rm -f "$temporary"' EXIT HUP INT TERM
@@ -66,17 +67,17 @@ saves them into the project beside the text they explain.
      ```
      Never overwrite an image the user has accepted; pick a new name instead.
    - HTML artifact target: artifact CSP blocks external hosts, so a remote URL never
-     renders. Save the PNG locally as above (a scratch dir is fine), then downscale
+     renders. Save the image locally as above (a scratch dir is fine), then downscale
      and recompress for the embed with `scripts/prepare-artifact-image.sh` from this
      skill's directory:
      ```
-     <skill-dir>/scripts/prepare-artifact-image.sh "<name>.png" "<name>.jpg"
+     <skill-dir>/scripts/prepare-artifact-image.sh "<name><ext>" "<name>-embed.jpg"
      ```
-     It uses ImageMagick, macOS `sips`, or FFmpeg, writes a single-line `<name>.b64`,
+     It uses ImageMagick, macOS `sips`, or FFmpeg, writes a single-line `<name>-embed.b64`,
      and fails clearly if no converter is installed.
      ```html
      <figure>
-       <img src="data:image/jpeg;base64,<contents of .b64>" alt="<alt text>"
+       <img src="data:image/jpeg;base64,<contents of <name>-embed.b64>" alt="<alt text>"
             style="max-width:100%;height:auto">
      </figure>
      ```
